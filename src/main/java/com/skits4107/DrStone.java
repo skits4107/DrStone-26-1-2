@@ -1,9 +1,13 @@
 package com.skits4107;
 
-import com.skits4107.sphere.MedusaSpheres;
+import com.skits4107.network.AllSphereData;
+import com.skits4107.sphere.MedusaSphere;
+import com.skits4107.sphere.SphereManager;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +21,8 @@ public class DrStone implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Hello Fabric world!");
 
-		ServerTickEvents.END_LEVEL_TICK.register(MedusaSpheres::onTick);
+		PayloadTypeRegistry.clientboundPlay().register(AllSphereData.TYPE, AllSphereData.ALL_SPHERE_CODEC);
+
+		ServerTickEvents.END_LEVEL_TICK.register(SphereManager::onTick);
 	}
 }
