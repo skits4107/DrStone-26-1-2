@@ -32,6 +32,9 @@ public class SphereManager {
             spheres.remove(sphere);
         }
 
+
+        //A potential future optimization:
+        // only send sphere data of spheres in range of a given players render distance.
         AllSphereData payload = buildPacket();
         for (ServerPlayer player : PlayerLookup.level(level)) {
             ServerPlayNetworking.send(player, payload);
