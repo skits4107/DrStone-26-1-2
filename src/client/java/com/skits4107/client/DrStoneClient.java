@@ -6,12 +6,15 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
 public class DrStoneClient implements ClientModInitializer {
+
+	public static RenderSpheres renderSpheres;
 	@Override
 	public void onInitializeClient() {
 		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
 
 		ClientPlayNetworking.registerGlobalReceiver(AllSphereData.TYPE, RenderSpheres::allSphereDataHandler);
 
-		RenderSpheres.initialize();
+		renderSpheres = new RenderSpheres();
+		renderSpheres.initialize();
 	}
 }
