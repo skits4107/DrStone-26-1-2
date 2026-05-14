@@ -42,8 +42,8 @@ public class SphereRenderPipeline {
 
     private static final RenderPipeline SPHERE_RENDER_PIPELINE = RenderPipelines.register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(DrStone.MOD_ID, "pipeline/medusa_sphere"))
-            .withVertexShader(Identifier.fromNamespaceAndPath(DrStone.MOD_ID, "shaders/core/medusa_sphere"))
-            .withFragmentShader(Identifier.fromNamespaceAndPath(DrStone.MOD_ID, "shaders/core/medusa_sphere"))
+            .withVertexShader(Identifier.fromNamespaceAndPath(DrStone.MOD_ID, "core/medusa_sphere"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath(DrStone.MOD_ID, "core/medusa_sphere"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
             .withDepthStencilState(Optional.empty())
