@@ -30,9 +30,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static net.minecraft.client.renderer.RenderPipelines.MATRICES_PROJECTION_SNIPPET;
 
@@ -49,8 +47,7 @@ public class SphereRenderPipeline {
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
             .withDepthStencilState(Optional.empty())
-            .withUniform("SphereCenter", UniformType.UNIFORM_BUFFER)
-            .withUniform("SphereRadius", UniformType.UNIFORM_BUFFER)
+            .withUniform("Sphere", UniformType.UNIFORM_BUFFER)
             .build()
     );
 
@@ -60,7 +57,10 @@ public class SphereRenderPipeline {
     private static final Vector4f COLOR_MODULATOR = new Vector4f(1f, 1f, 1f, 1f);
     private static final Vector3f MODEL_OFFSET = new Vector3f();
     private static final Matrix4f TEXTURE_MATRIX = new Matrix4f();
+
+
     private static MappableRingBuffer vertexBuffer;
+    private static MappableRingBuffer sphereUniformBuffer;
 
 
 
@@ -74,7 +74,7 @@ public class SphereRenderPipeline {
     private static void extractAndDrawSpheres(LevelRenderContext context) {
         for (SphereData sphere : SphereData){
             renderSphere(context, sphere);
-            //drawFilledThroughWalls(Minecraft.getInstance(), FILLED_THROUGH_WALLS);
+            drawSphere(Minecraft.getInstance(), SPHERE_RENDER_PIPELINE, sphere);
         }
         //renderWaypoint(context);
         //drawFilledThroughWalls(Minecraft.getInstance(), FILLED_THROUGH_WALLS);
@@ -151,15 +151,36 @@ public class SphereRenderPipeline {
         VertexFormat format = drawParameters.format();
 
         GpuBuffer vertices = upload(drawParameters, format, builtBuffer);
+        GpuBuffer uniforms = uploadSphere(sphere);
 
-        draw(client, pipeline, builtBuffer, drawParameters, vertices, format, sphere);
+        draw(client, pipeline, builtBuffer, drawParameters, vertices, format, uniforms);
 
         // Rotate the vertex buffer so we are less likely to use buffers that the GPU is using
         vertexBuffer.rotate();
+        sphereUniformBuffer.rotate();
         buffer = null;
     }
 
-    private static void draw(Minecraft client, RenderPipeline pipeline, MeshData builtBuffer, MeshData.DrawState drawParameters, GpuBuffer vertices, VertexFormat format, SphereData sphere) {
+    private static GpuBuffer uploadSphere(SphereData sphere){
+        if (sphereUniformBuffer == null) {
+            sphereUniformBuffer = new MappableRingBuffer(() -> "Sphere uniform", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE, 16 + 4);
+        }
+
+        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
+
+        try (GpuBuffer.MappedView view = encoder.mapBuffer(sphereUniformBuffer.currentBuffer().slice(0, 16+4), false, true)) {
+            long ptr = MemoryUtil.memAddress(view.data());
+            MemoryUtil.memPutFloat(ptr,      (float) sphere.pos().x);
+            MemoryUtil.memPutFloat(ptr + 4,  (float) sphere.pos().y);
+            MemoryUtil.memPutFloat(ptr + 8,  (float) sphere.pos().z);
+            MemoryUtil.memPutFloat(ptr + 12, 0f);
+            MemoryUtil.memPutFloat(ptr + 16, (float)sphere.radius());
+        }
+
+        return sphereUniformBuffer.currentBuffer();
+    }
+
+    private static void draw(Minecraft client, RenderPipeline pipeline, MeshData builtBuffer, MeshData.DrawState drawParameters, GpuBuffer vertices, VertexFormat format, GpuBuffer uniforms) {
         GpuBuffer indices;
         VertexFormat.IndexType indexType;
 
@@ -177,35 +198,10 @@ public class SphereRenderPipeline {
         }
 
         // Actually execute the draw
+
         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms()
                 .writeTransform(RenderSystem.getModelViewMatrix(), COLOR_MODULATOR, MODEL_OFFSET, TEXTURE_MATRIX);
-        GpuBuffer sphereCenterBuffer = RenderSystem.getDevice().createBuffer(
-                () -> "SphereCenter uniform",
-                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE,
-                16  // vec3 is padded to 16 bytes in std140 layout
-        );
-        GpuBuffer sphereRadiusBuffer = RenderSystem.getDevice().createBuffer(
-                () -> "SphereRadius uniform",
-                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE,
-                16  // float padded to 16 bytes
-        );
-        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
 
-        try (GpuBuffer.MappedView view = encoder.mapBuffer(sphereCenterBuffer.slice(0, 16), false, true)) {
-            long ptr = view.data().getLong();
-            MemoryUtil.memPutFloat(ptr,      (float) sphere.pos().x);
-            MemoryUtil.memPutFloat(ptr + 4,  (float) sphere.pos().y);
-            MemoryUtil.memPutFloat(ptr + 8,  (float) sphere.pos().z);
-            MemoryUtil.memPutFloat(ptr + 12, 0f); // padding
-        }
-
-        try (GpuBuffer.MappedView view = encoder.mapBuffer(sphereRadiusBuffer.slice(0, 16), false, true)) {
-            long ptr = view.data().getLong();
-            MemoryUtil.memPutFloat(ptr,  (float) sphere.radius());
-            MemoryUtil.memPutFloat(ptr + 4,  0f); // padding
-            MemoryUtil.memPutFloat(ptr + 8,  0f);
-            MemoryUtil.memPutFloat(ptr + 12, 0f);
-        }
         try (RenderPass renderPass = RenderSystem.getDevice()
                 .createCommandEncoder()
                 .createRenderPass(() -> DrStone.MOD_ID + " example render pipeline rendering", client.getMainRenderTarget().getColorTextureView(), OptionalInt.empty(), client.getMainRenderTarget().getDepthTextureView(), OptionalDouble.empty())) {
@@ -214,8 +210,7 @@ public class SphereRenderPipeline {
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
-            renderPass.setUniform("SphereCenter", sphereCenterBuffer.slice(0, 16));
-            renderPass.setUniform("SphereRadius", sphereRadiusBuffer.slice(0, 16));
+            renderPass.setUniform("Sphere", uniforms.slice(0, 16+4));
 
             // Bind texture if applicable:
             // Sampler0 is used for texture inputs in vertices
@@ -229,8 +224,6 @@ public class SphereRenderPipeline {
             renderPass.drawIndexed(0 / format.getVertexSize(), 0, drawParameters.indexCount(), 1);
         }
 
-        sphereCenterBuffer.close();
-        sphereRadiusBuffer.close();
         builtBuffer.close();
     }
 
@@ -255,6 +248,19 @@ public class SphereRenderPipeline {
         }
 
         return vertexBuffer.currentBuffer();
+    }
+
+    public static void close() {
+        allocator.close();
+
+        if (vertexBuffer != null) {
+            vertexBuffer.close();
+            vertexBuffer = null;
+        }
+        if (sphereUniformBuffer != null){
+            sphereUniformBuffer.close();
+            sphereUniformBuffer = null;
+        }
     }
 
     public static void allSphereDataHandler(AllSphereData payload, ClientPlayNetworking.Context context){
