@@ -1,9 +1,13 @@
 #version 120
 
 
-uniform Vec3 SphereCenter;
-uniform float SphereRadius;
+layout(std140) uniform SphereCenter {
+    vec4 sphereCenter; // xyz = center, w = padding
+};
 
+layout(std140) uniform SphereRadius {
+    vec4 sphereRadius; // x = radius, yzw = padding
+};
 void main() {
 
 }
