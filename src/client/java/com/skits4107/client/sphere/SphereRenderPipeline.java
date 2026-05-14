@@ -2,6 +2,7 @@ package com.skits4107.client.sphere;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.opengl.Uniform;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -9,6 +10,9 @@ import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.vertex.*;
 import com.skits4107.DrStone;
 import com.skits4107.network.AllSphereData;
@@ -48,8 +52,12 @@ public class SphereRenderPipeline {
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
             .withDepthStencilState(Optional.empty())
             .withUniform("Sphere", UniformType.UNIFORM_BUFFER)
+            .withCull(false)
+            .withSampler("DepthSampler")
             .build()
     );
+
+    private static  GpuSampler depthSampler;
 
     private static final ByteBufferBuilder allocator = new ByteBufferBuilder(RenderType.SMALL_BUFFER_SIZE);
     private static BufferBuilder buffer;
@@ -67,7 +75,6 @@ public class SphereRenderPipeline {
 
     public static void initialize(){
         //For hooking into render events later.
-
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(SphereRenderPipeline::extractAndDrawSpheres);
     }
 
@@ -215,6 +222,11 @@ public class SphereRenderPipeline {
             // Bind texture if applicable:
             // Sampler0 is used for texture inputs in vertices
             // renderPass.bindTexture("Sampler0", textureSetup.texure0(), textureSetup.sampler0());
+            renderPass.bindTexture(
+                    "DepthSampler",
+                    client.getMainRenderTarget().getDepthTextureView(),
+                    getDepthSampler()
+            );
 
             renderPass.setVertexBuffer(0, vertices);
             renderPass.setIndexBuffer(indices, indexType);
@@ -261,6 +273,24 @@ public class SphereRenderPipeline {
             sphereUniformBuffer.close();
             sphereUniformBuffer = null;
         }
+        if (depthSampler != null) {
+            depthSampler.close();
+            depthSampler = null;
+        }
+    }
+
+    private static GpuSampler getDepthSampler() {
+        if (depthSampler == null) {
+            depthSampler = RenderSystem.getDevice().createSampler(
+                    AddressMode.CLAMP_TO_EDGE,
+                    AddressMode.CLAMP_TO_EDGE,
+                    FilterMode.NEAREST,
+                    FilterMode.NEAREST,
+                    1,
+                    OptionalDouble.empty()
+            );
+        }
+        return depthSampler;
     }
 
     public static void allSphereDataHandler(AllSphereData payload, ClientPlayNetworking.Context context){
