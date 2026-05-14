@@ -16,7 +16,7 @@ public class SphereManager {
 
     public static void onTick(ServerLevel level){
         if (level.isClientSide()) return;
-        if (spheres.isEmpty()) return;
+        
 
         List<MedusaSphere> toRemove = new ArrayList<>();
         for (MedusaSphere sphere : spheres){

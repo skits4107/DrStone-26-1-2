@@ -28,7 +28,7 @@ public class MedusaSphere {
     }
 
     public boolean isDone(){
-        return done;
+        return radius >= maxRadius;
     }
 
     public float getRadius(){

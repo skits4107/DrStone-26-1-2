@@ -1,5 +1,6 @@
 package com.skits4107;
 
+import com.skits4107.commands.ModCommands;
 import com.skits4107.network.AllSphereData;
 import com.skits4107.sphere.MedusaSphere;
 import com.skits4107.sphere.SphereManager;
@@ -24,5 +25,7 @@ public class DrStone implements ModInitializer {
 		PayloadTypeRegistry.clientboundPlay().register(AllSphereData.TYPE, AllSphereData.ALL_SPHERE_CODEC);
 
 		ServerTickEvents.END_LEVEL_TICK.register(SphereManager::onTick);
+
+		ModCommands.register();
 	}
 }
