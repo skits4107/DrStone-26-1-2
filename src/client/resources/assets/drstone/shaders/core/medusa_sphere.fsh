@@ -46,11 +46,13 @@ void main() {
         float near = ProjMat[3][2] / (ProjMat[2][2] - 1.0);
         float far  = ProjMat[3][2] / (ProjMat[2][2] + 1.0);
         float linearDepth = near * far / (far - rawDepth * (far - near));
-        float visualDepth = linearDepth / 64.0;
 
         float total = 0.0;
 
         for(float i=startT; i < endT; i+=stepSize){
+            if (i > linearDepth){
+                break;
+            }
             total += sphere_sample(rayOrigin+rayDir*i, sphereCenter);
         }
 
