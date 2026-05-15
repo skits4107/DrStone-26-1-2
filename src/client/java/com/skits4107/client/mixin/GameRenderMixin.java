@@ -1,7 +1,9 @@
 package com.skits4107.client.mixin;
 
+
 import com.skits4107.client.sphere.SphereRenderPipeline;
 import net.minecraft.client.renderer.GameRenderer;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,4 +15,6 @@ public class GameRenderMixin {
     private void onGameRendererClose(CallbackInfo ci) {
         SphereRenderPipeline.close();
     }
+
+
 }

@@ -1,8 +1,9 @@
 package com.skits4107.client.sphere;
 
+
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.opengl.Uniform;
+
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -15,12 +16,14 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.vertex.*;
 import com.skits4107.DrStone;
+
 import com.skits4107.network.AllSphereData;
 import com.skits4107.network.SphereData;
-import com.skits4107.network.SphereData;
+
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MappableRingBuffer;
@@ -71,11 +74,10 @@ public class SphereRenderPipeline {
     private static MappableRingBuffer sphereUniformBuffer;
 
 
-
-
     public static void initialize(){
         //For hooking into render events later.
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(SphereRenderPipeline::extractAndDrawSpheres);
+
     }
 
     private static void extractAndDrawSpheres(LevelRenderContext context) {
@@ -83,8 +85,7 @@ public class SphereRenderPipeline {
             renderSphere(context, sphere);
             drawSphere(Minecraft.getInstance(), SPHERE_RENDER_PIPELINE, sphere);
         }
-        //renderWaypoint(context);
-        //drawFilledThroughWalls(Minecraft.getInstance(), FILLED_THROUGH_WALLS);
+
     }
 
     private static void renderSphere(LevelRenderContext context, SphereData sphere){
@@ -98,56 +99,19 @@ public class SphereRenderPipeline {
             buffer = new BufferBuilder(allocator, SPHERE_RENDER_PIPELINE.getVertexFormatMode(), SPHERE_RENDER_PIPELINE.getVertexFormat());
         }
 
-        renderSphereBox(matrices.last().pose(), buffer, sphere);
+        renderSphereBox(matrices.last().pose(), buffer);
 
         matrices.popPose();
     }
 
-    private static void renderSphereBox(Matrix4fc positionMatrix, BufferBuilder buffer, SphereData sphere){
-        //10% bigger than actual sphere radius, to ensure the fully sphere can render.
-        double radius = sphere.radius() * 1.1;
-        Vec3 pos = sphere.pos();
-        float minX = (float) (pos.x - radius);
-        float maxX = (float)(pos.x + radius);
-        float minY = (float)(pos.y - radius);
-        float maxY = (float)(pos.y + radius);
-        float minZ = (float)(pos.z - radius);
-        float maxZ = (float)(pos.z + radius);
+    private static void renderSphereBox(Matrix4fc positionMatrix, BufferBuilder buffer){
 
-        buffer.addVertex(positionMatrix, minX, minY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, minY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, maxY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, maxY, maxZ).setColor(0, 0, 0, 0);
 
-        // Back face
-        buffer.addVertex(positionMatrix, maxX, minY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, minY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, maxY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, maxY, minZ).setColor(0, 0, 0, 0);
+        buffer.addVertex(-1f, -1f, 0f).setColor(0, 0, 0, 0);
+        buffer.addVertex( 1f, -1f, 0f).setColor(0, 0, 0, 0);
+        buffer.addVertex(  1f,  1f, 0f).setColor(0, 0, 0, 0);
+        buffer.addVertex( -1f,  1f, 0f).setColor(0, 0, 0, 0);
 
-        // Left face
-        buffer.addVertex(positionMatrix, minX, minY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, minY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, maxY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, maxY, minZ).setColor(0, 0, 0, 0);
-
-        // Right face
-        buffer.addVertex(positionMatrix, maxX, minY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, minY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, maxY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, maxY, maxZ).setColor(0, 0, 0, 0);
-
-        // Top face
-        buffer.addVertex(positionMatrix, minX, maxY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, maxY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, maxY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, maxY, minZ).setColor(0, 0, 0, 0);
-
-        // Bottom face
-        buffer.addVertex(positionMatrix, minX, minY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, minY, minZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, maxX, minY, maxZ).setColor(0, 0, 0, 0);
-        buffer.addVertex(positionMatrix, minX, minY, maxZ).setColor(0, 0, 0, 0);
 
     }
 
@@ -158,7 +122,9 @@ public class SphereRenderPipeline {
         VertexFormat format = drawParameters.format();
 
         GpuBuffer vertices = upload(drawParameters, format, builtBuffer);
-        GpuBuffer uniforms = uploadSphere(sphere);
+
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        GpuBuffer uniforms = uploadSphere(sphere, camera);
 
         draw(client, pipeline, builtBuffer, drawParameters, vertices, format, uniforms);
 
@@ -168,22 +134,25 @@ public class SphereRenderPipeline {
         buffer = null;
     }
 
-    private static GpuBuffer uploadSphere(SphereData sphere){
+    private static GpuBuffer uploadSphere(SphereData sphere, Camera camera){
         if (sphereUniformBuffer == null) {
-            sphereUniformBuffer = new MappableRingBuffer(() -> "Sphere uniform", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE, 16 + 4);
+            sphereUniformBuffer = new MappableRingBuffer(() -> "Sphere uniform", GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_MAP_WRITE, 32);
         }
 
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
 
-        try (GpuBuffer.MappedView view = encoder.mapBuffer(sphereUniformBuffer.currentBuffer().slice(0, 16+4), false, true)) {
+        try (GpuBuffer.MappedView view = encoder.mapBuffer(sphereUniformBuffer.currentBuffer().slice(0, 32), false, true)) {
             long ptr = MemoryUtil.memAddress(view.data());
             MemoryUtil.memPutFloat(ptr,      (float) sphere.pos().x);
             MemoryUtil.memPutFloat(ptr + 4,  (float) sphere.pos().y);
             MemoryUtil.memPutFloat(ptr + 8,  (float) sphere.pos().z);
-            MemoryUtil.memPutFloat(ptr + 12, 0f);
-            MemoryUtil.memPutFloat(ptr + 16, (float)sphere.radius());
-        }
+            MemoryUtil.memPutFloat(ptr + 12, sphere.radius());
 
+            MemoryUtil.memPutFloat(ptr + 16,      (float) camera.position().x);
+            MemoryUtil.memPutFloat(ptr + 20,  (float) camera.position().y);
+            MemoryUtil.memPutFloat(ptr + 24,  (float) camera.position().z);
+            MemoryUtil.memPutFloat(ptr + 28,  0.0f); //padding
+        }
         return sphereUniformBuffer.currentBuffer();
     }
 
@@ -217,7 +186,7 @@ public class SphereRenderPipeline {
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
-            renderPass.setUniform("Sphere", uniforms.slice(0, 16+4));
+            renderPass.setUniform("Sphere", uniforms.slice(0, 32));
 
             // Bind texture if applicable:
             // Sampler0 is used for texture inputs in vertices
