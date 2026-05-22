@@ -34,13 +34,25 @@ void main() {
         vec3 viewDir = vec3(ndc.x * (ScreenSize.x / ScreenSize.y) * fovScale, ndc.y * fovScale, -1.0);
         vec3 rayDir = normalize(mat3(inverse(ModelViewMat)) * viewDir);
 
-        vec3 rayOrigin = cameraPos.xyz;
-
-        vec3 toSphere = sphereCenter - rayOrigin;
+        vec3 toSphere = sphereCenter - cameraPos.xyz;
         float distToSphere = length(toSphere);
+
+
+        float tClosest = dot(toSphere, rayDir);
+
+        float distSqToRay = dot(toSphere, toSphere) - tClosest * tClosest;
+
+
+        float radiusBuffer = max(1.4, -0.0375*sphereRadius+2.375) * sphereRadius;
+        float effectiveRadius = sphereRadius + radiusBuffer;
+
+        if (distSqToRay > effectiveRadius * effectiveRadius) {
+            return; // this pixel ray cannot matter
+        }
+
+
         float startT = max(0.0, distToSphere - sphereRadius * 1.5);
         float endT = distToSphere + sphereRadius * 1.5;
-
 
         float rawDepth = texture(DepthSampler, gl_FragCoord.xy /ScreenSize).r;
         float near = ProjMat[3][2] / (ProjMat[2][2] - 1.0);
@@ -53,7 +65,7 @@ void main() {
             if (i > linearDepth){
                 break;
             }
-            total += sphere_sample(rayOrigin+rayDir*i, sphereCenter);
+            total += sphere_sample(cameraPos.xyz+rayDir*i, sphereCenter);
         }
 
         total = clamp(total, 0.0, 1.0);

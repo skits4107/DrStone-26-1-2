@@ -28,8 +28,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -82,6 +84,19 @@ public class SphereRenderPipeline {
 
     private static void extractAndDrawSpheres(LevelRenderContext context) {
         for (SphereData sphere : SphereData){
+            Frustum frustum = context.levelState().cameraRenderState.cullFrustum;
+            AABB box = new AABB(
+                    sphere.pos().x - sphere.radius(),
+                    sphere.pos().y - sphere.radius(),
+                    sphere.pos().z - sphere.radius(),
+                    sphere.pos().x + sphere.radius(),
+                    sphere.pos().y + sphere.radius(),
+                    sphere.pos().z + sphere.radius()
+            );
+            if (!frustum.isVisible(box)) {
+                continue;
+            }
+
             renderSphere(context, sphere);
             drawSphere(Minecraft.getInstance(), SPHERE_RENDER_PIPELINE, sphere);
         }
