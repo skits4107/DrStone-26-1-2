@@ -15,15 +15,60 @@ uniform sampler2D DepthSampler;
 out vec4 fragColor;
 
 float stepSize = 0.1;
+        
 
-float sphere_sample(in vec3 p, vec3 center){
+vec4 shell_sample(vec3 p, float r, vec3 center, vec3 color, float fallOff, float densityScale, vec3 pointColor){
     float dist = length(p - center);
-    float distFromShell = abs(dist - sphereRadius); // 0 at shell surface
+    float distFromShell = abs(dist - r); // 0 at shell surface
 
-    float density = exp(-distFromShell*1.1);
+    float shellDistInRadii = max(0.0, 1.0 - (distFromShell / r));
 
-    density = density;
-    return density*0.02;
+    float density = exp(-distFromShell*fallOff) * densityScale;
+
+    return vec4(mix(pointColor, color, shellDistInRadii), density);
+}
+
+vec4 medusa_sample(vec3 p){
+    vec4 outerSphere = shell_sample(
+        p,
+        sphereRadius,
+        sphereCenter,
+        vec3(0.0, 1.0, 0.0),
+        1.1,
+        0.2,
+        vec3(0.0)
+    );
+
+    vec4 midSphere = shell_sample(
+        p,
+        sphereRadius * (2.0 / 3.0),
+        sphereCenter,
+        vec3(0.9, 1.0, 0.9),
+        1.5,
+        0.1,
+        outerSphere.rgb
+    );
+
+    vec4 innerSphere = shell_sample(
+        p,
+        sphereRadius / 3.0,
+        sphereCenter,
+        vec3(0.0, 0.25, 0.0),
+        1.05,
+        0.5,
+        midSphere.rgb
+    );
+
+    float alpha = outerSphere.a + midSphere.a + innerSphere.a;
+
+    vec3 color =
+    outerSphere.rgb * outerSphere.a +
+    midSphere.rgb * midSphere.a +
+    innerSphere.rgb * innerSphere.a;
+
+    color /= max(alpha, 0.0001);
+
+    return vec4(color, alpha);
 }
 
 void main() {
@@ -59,18 +104,27 @@ void main() {
         float far  = ProjMat[3][2] / (ProjMat[2][2] + 1.0);
         float linearDepth = near * far / (far - rawDepth * (far - near));
 
-        float total = 0.0;
+
+
+        vec4 total = vec4(0.0, 0.0, 0.0, 0.0);
 
         for(float i=startT; i < endT; i+=stepSize){
             if (i > linearDepth){
                 break;
             }
-            total += sphere_sample(cameraPos.xyz+rayDir*i, sphereCenter);
+            vec4 point = medusa_sample(cameraPos.xyz + rayDir * i);
+
+            float a = point.a * stepSize;
+
+            total.rgb += point.rgb * a;
+            total.a += a;
         }
 
+
+        total.rgb /= max(total.a, 0.0001);
         total = clamp(total, 0.0, 1.0);
 
-        fragColor = vec4(0.0, total, 0.0, total);
+        fragColor = total;//vec4(0.0, total, 0.0, total);
 
 }
 
