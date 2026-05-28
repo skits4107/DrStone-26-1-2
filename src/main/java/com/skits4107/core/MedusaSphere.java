@@ -34,7 +34,7 @@ public class MedusaSphere {
 
     private UUID medusaUUID;
 
-    // constructor should only be used in SphereManager to ensure all spheres are tracked.
+    // constructor should only be used in SphereManager to ensure all spheres are tracked. Or when being saved and loaded.
 
     MedusaSphere(Vec3 pos, float size) {
         position = pos;
