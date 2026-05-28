@@ -124,7 +124,7 @@ void main() {
         total.rgb /= max(total.a, 0.0001);
         total = clamp(total, 0.0, 1.0);
 
-        fragColor = total;//vec4(0.0, total, 0.0, total);
+        fragColor = total;
 
 }
 

@@ -1,4 +1,4 @@
-package com.skits4107.sphere;
+package com.skits4107.core;
 
 import com.skits4107.network.AllSphereData;
 import com.skits4107.network.SphereData;
@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
@@ -53,4 +54,12 @@ public class SphereManager {
         MedusaSphere sphere = new MedusaSphere(pos, size);
         spheres.add(sphere);
    }
+    public static void createSphere(Vec3 pos, float size, IMedusa medusa){
+        MedusaSphere sphere = new MedusaSphere(pos, size, medusa);
+        spheres.add(sphere);
+    }
+    public static void createSphere(Vec3 pos, float size, IMedusa medusa, ItemStack medusaItem){
+        MedusaSphere sphere = new MedusaSphere(pos, size, medusa, medusaItem);
+        spheres.add(sphere);
+    }
 }

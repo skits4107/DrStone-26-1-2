@@ -1,14 +1,14 @@
 package com.skits4107;
 
 import com.skits4107.commands.ModCommands;
+import com.skits4107.components.ModComponents;
+import com.skits4107.core.SphereManager;
+import com.skits4107.items.ModItems;
 import com.skits4107.network.AllSphereData;
-import com.skits4107.sphere.MedusaSphere;
-import com.skits4107.sphere.SphereManager;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,5 +27,7 @@ public class DrStone implements ModInitializer {
 		ServerTickEvents.END_LEVEL_TICK.register(SphereManager::onTick);
 
 		ModCommands.register();
+		ModItems.init();
+		ModComponents.init();
 	}
 }
