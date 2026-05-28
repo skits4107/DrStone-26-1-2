@@ -24,20 +24,20 @@ public class Medusa extends Item implements IMedusa {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        activate(player.getItemInHand(hand), 5, 20);
+        activate(player.getItemInHand(hand), 5, 20, player);
         return super.use(level, player, hand);
     }
 
     //stack shouldn't be null in reality, its only nullable as entities that are medusa won't have item stacks.
 
     @Override
-    public void MedusaTick(@Nullable ItemStack stack, Entity owner) {
+    public void MedusaTick(@Nullable ItemStack stack, @Nullable Entity owner) {
         if (owner.level().isClientSide()){
             return;
         }
         float delta = 1.0f / owner.level().tickRateManager().tickrate();
 
-        if (stack == null){
+        if (stack == null || owner == null){
             return;
         }
 
@@ -58,7 +58,7 @@ public class Medusa extends Item implements IMedusa {
         boolean active = true;
 
         if (newTime <= 0){
-            SphereManager.createSphere(owner.position(), oldData.d(), this, stack, (ServerLevel) owner.level());
+            SphereManager.createSphere(owner.position(), oldData.d(), owner, (ServerLevel) owner.level());
             active = false;
         }
 
@@ -73,47 +73,12 @@ public class Medusa extends Item implements IMedusa {
         MedusaTick(itemStack, owner);
     }
 
-    @Override
-    public float getTime(@Nullable ItemStack stack) {
-        if (stack != null) {
-            MedusaData data = getData(stack);
-            return data.t();
-        }
-        return 0;
-    }
 
     @Override
-    public float getDistance(@Nullable ItemStack stack) {
-        if (stack != null) {
-            MedusaData data = getData(stack);
-            return data.d();
+    public void activate(@Nullable ItemStack stack, float t, float d, @Nullable Entity owner) {
+        if (stack != null && owner != null) {
+            stack.set(ModComponents.MEDUSA_DATA_COMPONENT_TYPE, new MedusaData(t, d, true, owner.position()));
         }
-        return 0;
-    }
-
-    @Override
-    public Vec3 getPosition(@Nullable ItemStack stack) {
-        if (stack != null) {
-            MedusaData data = getData(stack);
-            return data.pos();
-        }
-        return Vec3.ZERO;
-    }
-
-    @Override
-    public void activate(@Nullable ItemStack stack, float t, float d) {
-        if (stack != null) {
-            stack.set(ModComponents.MEDUSA_DATA_COMPONENT_TYPE, new MedusaData(t, d, true, getPosition(stack)));
-        }
-    }
-
-    @Override
-    public boolean isActive(@Nullable ItemStack stack) {
-        if (stack != null) {
-            MedusaData data = getData(stack);
-            return data.active();
-        }
-        return false;
     }
 
 

@@ -25,34 +25,17 @@ public class PlacedMedusa extends Entity implements IMedusa {
     //stack is likely completely null always for all these methods
 
     @Override
-    public void MedusaTick(@Nullable ItemStack stack, Entity owner) {
+    public void MedusaTick(@Nullable ItemStack stack, @Nullable Entity owner) {
 
     }
+
+
 
     @Override
-    public float getTime(@Nullable ItemStack stack) {
-        return 0;
-    }
-
-    @Override
-    public float getDistance(@Nullable ItemStack stack) {
-        return 0;
-    }
-
-    @Override
-    public Vec3 getPosition(@Nullable ItemStack stack) {
-        return null;
-    }
-
-    @Override
-    public void activate(@Nullable ItemStack stack, float t, float d) {
+    public void activate(@Nullable ItemStack stack, float t, float d, @Nullable Entity owner) {
 
     }
 
-    @Override
-    public boolean isActive(@Nullable ItemStack stack) {
-        return false;
-    }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder entityData) {

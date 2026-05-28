@@ -8,8 +8,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -54,18 +56,9 @@ public class SphereManager {
         return new AllSphereData(data);
    }
 
-   public static void createSphere(Vec3 pos, float size, ServerLevel level){
-        MedusaSphere sphere = new MedusaSphere(pos, size);
-       SphereSavedData data = SphereSavedData.getSavedSphereData(level);
-       data.addSphere(sphere);
-   }
-    public static void createSphere(Vec3 pos, float size, IMedusa medusa, ServerLevel level){
+
+    public static void createSphere(Vec3 pos, float size, @Nullable Entity medusa, ServerLevel level){
         MedusaSphere sphere = new MedusaSphere(pos, size, medusa);
-        SphereSavedData data = SphereSavedData.getSavedSphereData(level);
-        data.addSphere(sphere);
-    }
-    public static void createSphere(Vec3 pos, float size, IMedusa medusa, ItemStack medusaItem, ServerLevel level){
-        MedusaSphere sphere = new MedusaSphere(pos, size, medusa, medusaItem);
         SphereSavedData data = SphereSavedData.getSavedSphereData(level);
         data.addSphere(sphere);
     }

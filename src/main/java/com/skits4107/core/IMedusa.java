@@ -8,11 +8,9 @@ import org.jspecify.annotations.Nullable;
 
 public interface IMedusa {
 
-    // item version need to reference item stack. entities not as much.
-     void MedusaTick(@Nullable ItemStack stack, Entity owner);
-     float getTime(@Nullable ItemStack stack);
-     float getDistance(@Nullable ItemStack stack);
-     Vec3 getPosition(@Nullable ItemStack stack);
-     void activate(@Nullable ItemStack stack, float t, float d);
-    boolean isActive(@Nullable ItemStack stack);
+    // item version need to reference item stack. entity medusas dont have any items to worry about.
+    // item also needs owner, entity medusas are their own owners
+     void MedusaTick(@Nullable ItemStack stack, @Nullable Entity owner);
+     void activate(@Nullable ItemStack stack, float t, float d, @Nullable Entity owner);
+
 }
