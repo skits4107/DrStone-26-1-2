@@ -17,7 +17,7 @@ public record AllSphereData(List<SphereData> spheres) implements CustomPacketPay
     public static final CustomPacketPayload.Type<AllSphereData> TYPE = new CustomPacketPayload.Type<>(ALL_SPHERE_ID);
 
     public static final StreamCodec<RegistryFriendlyByteBuf, AllSphereData> ALL_SPHERE_CODEC = StreamCodec.composite(
-            ByteBufCodecs.collection(ArrayList::new, SphereData.SPHERE_CODEC), AllSphereData::spheres,
+            ByteBufCodecs.collection(ArrayList::new, SphereData.SPHERE_STREAM_CODEC), AllSphereData::spheres,
             AllSphereData::new
     );
 

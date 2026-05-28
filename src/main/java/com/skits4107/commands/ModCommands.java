@@ -16,7 +16,7 @@ public class ModCommands {
         float meters = FloatArgumentType.getFloat(context, "meters");
         Vec3 pos = Vec3Argument.getVec3(context, "pos");
 
-        SphereManager.createSphere(pos, meters);
+        SphereManager.createSphere(pos, meters, context.getSource().getLevel());
 
         context.getSource().sendSuccess(() -> Component.literal("summoned medusa sphere of %f meters".formatted(meters)), false);
         return 1;

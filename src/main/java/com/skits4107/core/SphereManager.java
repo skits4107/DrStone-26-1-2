@@ -2,8 +2,10 @@ package com.skits4107.core;
 
 import com.skits4107.network.AllSphereData;
 import com.skits4107.network.SphereData;
+import com.skits4107.world.SphereSavedData;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -13,14 +15,14 @@ import java.util.*;
 
 public class SphereManager {
 
-    private static List<MedusaSphere> spheres = new ArrayList<>();
 
     public static void onTick(ServerLevel level){
         if (level.isClientSide()) return;
 
+        SphereSavedData data = SphereSavedData.getSavedSphereData(level);
 
         List<MedusaSphere> toRemove = new ArrayList<>();
-        for (MedusaSphere sphere : spheres){
+        for (MedusaSphere sphere : data.getSpheres()){
             if (sphere.isDone()){
                 toRemove.add(sphere);
                 continue;
@@ -28,38 +30,43 @@ public class SphereManager {
 
             sphere.onTick(level);
         }
+        data.setDirty();
 
         for (MedusaSphere sphere : toRemove){
-            spheres.remove(sphere);
+            data.removeSphere(sphere);
         }
 
 
         //A potential future optimization:
         // only send sphere data of spheres in range of a given players render distance.
-        AllSphereData payload = buildPacket();
+        AllSphereData payload = buildPacket(level, data.getSpheres());
         for (ServerPlayer player : PlayerLookup.level(level)) {
             ServerPlayNetworking.send(player, payload);
         }
     }
 
-   private static AllSphereData buildPacket(){
+   private static AllSphereData buildPacket(ServerLevel level, List<MedusaSphere> spheres){
         List<SphereData> data = new ArrayList<>();
+
         for (MedusaSphere sphere: spheres){
             data.add(new SphereData(sphere.getPos(), sphere.getRadius()));
         }
         return new AllSphereData(data);
    }
 
-   public static void createSphere(Vec3 pos, float size){
+   public static void createSphere(Vec3 pos, float size, ServerLevel level){
         MedusaSphere sphere = new MedusaSphere(pos, size);
-        spheres.add(sphere);
+       SphereSavedData data = SphereSavedData.getSavedSphereData(level);
+       data.addSphere(sphere);
    }
-    public static void createSphere(Vec3 pos, float size, IMedusa medusa){
+    public static void createSphere(Vec3 pos, float size, IMedusa medusa, ServerLevel level){
         MedusaSphere sphere = new MedusaSphere(pos, size, medusa);
-        spheres.add(sphere);
+        SphereSavedData data = SphereSavedData.getSavedSphereData(level);
+        data.addSphere(sphere);
     }
-    public static void createSphere(Vec3 pos, float size, IMedusa medusa, ItemStack medusaItem){
+    public static void createSphere(Vec3 pos, float size, IMedusa medusa, ItemStack medusaItem, ServerLevel level){
         MedusaSphere sphere = new MedusaSphere(pos, size, medusa, medusaItem);
-        spheres.add(sphere);
+        SphereSavedData data = SphereSavedData.getSavedSphereData(level);
+        data.addSphere(sphere);
     }
 }

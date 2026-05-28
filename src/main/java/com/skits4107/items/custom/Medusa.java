@@ -58,7 +58,7 @@ public class Medusa extends Item implements IMedusa {
         boolean active = true;
 
         if (newTime <= 0){
-            SphereManager.createSphere(owner.position(), oldData.d(), this, stack);
+            SphereManager.createSphere(owner.position(), oldData.d(), this, stack, (ServerLevel) owner.level());
             active = false;
         }
 

@@ -1,10 +1,18 @@
 package com.skits4107.core;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 public class MedusaSphere {
+
+    public static final Codec<MedusaSphere> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codecs.VEC3_CODEC.fieldOf("position").forGetter(MedusaSphere::getPos),
+            Codec.FLOAT.fieldOf("radius").forGetter(MedusaSphere::getRadius),
+            Codec.FLOAT.fieldOf("max_radius").forGetter(MedusaSphere::getMaxRadius)
+    ).apply(instance, MedusaSphere::new));
 
     private boolean done = false;
 
@@ -21,16 +29,24 @@ public class MedusaSphere {
     private ItemStack medusaItem = null;
 
     // constructor should only be used in SphereManager to ensure all spheres are tracked.
-    MedusaSphere (Vec3 pos, float size){
+     MedusaSphere (Vec3 pos, float size){
         position = pos;
         maxRadius = size;
     }
+
+    //for saving and loading spheres.
+    public MedusaSphere (Vec3 pos, float radius, float maxRadius){
+        position = pos;
+        this.radius = radius;
+        this.maxRadius = maxRadius;
+    }
+
     MedusaSphere (Vec3 pos, float size, IMedusa medusa){
         position = pos;
         maxRadius = size;
         this.medusa = medusa;
     }
-    MedusaSphere (Vec3 pos, float size, IMedusa medusa, ItemStack medusaItem){
+    public MedusaSphere (Vec3 pos, float size, IMedusa medusa, ItemStack medusaItem){
         position = pos;
         maxRadius = size;
         this.medusa = medusa;
