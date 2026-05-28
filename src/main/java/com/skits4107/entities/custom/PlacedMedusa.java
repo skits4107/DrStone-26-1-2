@@ -20,7 +20,7 @@ public class PlacedMedusa extends Entity implements IMedusa {
     //TODO: handle medusa data
 
     //stack is likely completely null always for all these methods
-    
+
     @Override
     public void MedusaTick(@Nullable ItemStack stack, Entity owner) {
 
