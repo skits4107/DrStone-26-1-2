@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:component",
+    "predicate": "drstone:medusa_predicate",
+    "value": {
+      "active": true
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "drstone:item/medusa_active"
+    },
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "drstone:item/medusa"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package com.skits4107.mixin;
 
+import com.skits4107.DrStone;
 import com.skits4107.items.custom.Medusa;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;

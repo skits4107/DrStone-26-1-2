@@ -14,6 +14,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class PlacedMedusa extends Entity implements IMedusa {
+
+
+
     public PlacedMedusa(EntityType<?> type, Level level) {
         super(type, level);
     }

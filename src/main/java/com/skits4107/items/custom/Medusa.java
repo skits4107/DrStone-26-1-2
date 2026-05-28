@@ -5,17 +5,27 @@ import com.skits4107.core.IMedusa;
 import com.skits4107.core.MedusaData;
 import com.skits4107.core.SphereManager;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Medusa extends Item implements IMedusa {
     public Medusa(Properties properties) {
         super(properties.component(ModComponents.MEDUSA_DATA_COMPONENT_TYPE, new MedusaData(0, 0, false, Vec3.ZERO)));
+    }
+
+    @Override
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        activate(player.getItemInHand(hand), 5, 20);
+        return super.use(level, player, hand);
     }
 
     //stack shouldn't be null in reality, its only nullable as entities that are medusa won't have item stacks.
