@@ -3,7 +3,8 @@
 	"package": "com.skits4107.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"ExampleClientMixin"
+		"ExampleClientMixin",
+		"GameRenderMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
