@@ -1,9 +1,11 @@
 package com.skits4107.items.custom;
 
+import com.skits4107.DrStone;
 import com.skits4107.components.ModComponents;
 import com.skits4107.core.IMedusa;
 import com.skits4107.core.MedusaData;
 import com.skits4107.core.SphereManager;
+import com.skits4107.entities.custom.ThrownMedusa;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -13,9 +15,12 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
+
+import java.util.logging.Logger;
 
 public class Medusa extends Item implements IMedusa {
     public Medusa(Properties properties) {
@@ -24,7 +29,22 @@ public class Medusa extends Item implements IMedusa {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        activate(player.getItemInHand(hand), 5, 20, player);
+        if (level.isClientSide()){
+            return super.use(level, player, hand);
+        }
+
+
+        ItemStack item = player.getItemInHand(hand);
+
+        ThrownMedusa medusa = new ThrownMedusa(level, player.position(), getData(item).active());
+        medusa.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, 2.0f, 0.5f);
+
+        if(player.gameMode() != GameType.CREATIVE) {
+            player.getItemInHand(hand).shrink(1);
+        }
+        level.addFreshEntity(medusa);
+
+      //  activate(player.getItemInHand(hand), 5, 20, player);
         return super.use(level, player, hand);
     }
 

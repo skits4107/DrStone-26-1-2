@@ -1,18 +1,30 @@
 package com.skits4107.entities.custom;
 
 import com.skits4107.core.IMedusa;
+import com.skits4107.entities.ModEntities;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
+
+
 public class ThrownMedusa extends ThrowableProjectile implements IMedusa {
-    protected ThrownMedusa(EntityType<? extends ThrowableProjectile> type, Level level) {
+
+
+
+    public ThrownMedusa(EntityType<? extends ThrownMedusa> type, Level level) {
         super(type, level);
+    }
+
+    public ThrownMedusa(Level level, Vec3 pos, boolean activated){
+        super(ModEntities.THROWN_MEDUSA_ENTITY_TYPE, level);
+        setPos(pos);
     }
 
     @Override
@@ -34,4 +46,15 @@ public class ThrownMedusa extends ThrowableProjectile implements IMedusa {
 
     }
 
+    @Override
+    protected void onHit(HitResult hitResult) {
+        if (level().isClientSide()){
+            return;
+        }
+        PlacedMedusa medusa = new PlacedMedusa(level(), position(), false);
+
+        level().addFreshEntity(medusa);
+
+        this.remove(RemovalReason.DISCARDED);
+    }
 }

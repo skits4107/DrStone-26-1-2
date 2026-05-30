@@ -3,6 +3,7 @@ package com.skits4107;
 import com.skits4107.commands.ModCommands;
 import com.skits4107.components.ModComponents;
 import com.skits4107.core.SphereManager;
+import com.skits4107.entities.ModEntities;
 import com.skits4107.items.ModItems;
 import com.skits4107.network.AllSphereData;
 import net.fabricmc.api.ModInitializer;
@@ -32,5 +33,6 @@ public class DrStone implements ModInitializer {
 		ModCommands.register();
 		ModItems.init();
 		ModComponents.init();
+		ModEntities.init();
 	}
 }
