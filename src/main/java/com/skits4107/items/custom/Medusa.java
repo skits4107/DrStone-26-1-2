@@ -43,11 +43,9 @@ public class Medusa extends Item implements IMedusa {
         }
 
         medusa.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, 2.0f, 0.5f);
+        
+        player.getItemInHand(hand).shrink(1);
 
-
-        if(player.gameMode() != GameType.CREATIVE) {
-            player.getItemInHand(hand).shrink(1);
-        }
         level.addFreshEntity(medusa);
 
       //  activate(player.getItemInHand(hand), 5, 20, player);
