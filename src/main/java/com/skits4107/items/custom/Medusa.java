@@ -35,9 +35,15 @@ public class Medusa extends Item implements IMedusa {
 
 
         ItemStack item = player.getItemInHand(hand);
+        MedusaData data = getData(item);
 
-        ThrownMedusa medusa = new ThrownMedusa(level, player.position(), getData(item).active());
+        ThrownMedusa medusa = new ThrownMedusa(level, player.position());
+        if (data.active()){
+            medusa.activate(null, data.t(), data.d(), medusa);
+        }
+
         medusa.shootFromRotation(player, player.getXRot(), player.getYRot(), 0f, 2.0f, 0.5f);
+
 
         if(player.gameMode() != GameType.CREATIVE) {
             player.getItemInHand(hand).shrink(1);
@@ -55,7 +61,6 @@ public class Medusa extends Item implements IMedusa {
         if (owner.level().isClientSide()){
             return;
         }
-        float delta = 1.0f / owner.level().tickRateManager().tickrate();
 
         if (stack == null || owner == null){
             return;
@@ -63,16 +68,14 @@ public class Medusa extends Item implements IMedusa {
 
         MedusaData oldData = getData(stack);
 
-        if (oldData == null){
-            oldData = new MedusaData(0, 0, false, Vec3.ZERO);
-        }
-
-        if (!oldData.active()){
+        if (oldData == null || !oldData.active()){
             // keep position updated even if it is not active.
-            MedusaData newData = new MedusaData(0, 0, false, owner.position());
-            stack.set(ModComponents.MEDUSA_DATA_COMPONENT_TYPE, newData);
+            oldData = new MedusaData(0, 0, false, owner.position());
+            stack.set(ModComponents.MEDUSA_DATA_COMPONENT_TYPE, oldData);
             return;
         }
+
+        float delta = 1.0f / owner.level().tickRateManager().tickrate();
 
         float newTime = oldData.t() - delta;
         boolean active = true;

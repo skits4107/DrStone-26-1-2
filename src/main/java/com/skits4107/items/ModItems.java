@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public class ModItems {
 
-    public static final Item MEDUSA = register("medusa", Medusa::new, new Item.Properties());
+    public static final Medusa MEDUSA = register("medusa", Medusa::new, new Item.Properties());
 
     public static <T extends Item> T register(String name, Function<Item.Properties, T> itemFactory, Item.Properties settings) {
         // Create the item key.

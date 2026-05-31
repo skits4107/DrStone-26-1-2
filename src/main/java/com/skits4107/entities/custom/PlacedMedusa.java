@@ -1,9 +1,12 @@
 package com.skits4107.entities.custom;
 
 import com.skits4107.core.IMedusa;
+import com.skits4107.core.SphereManager;
 import com.skits4107.entities.ModEntities;
 import com.skits4107.items.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -23,13 +26,18 @@ import org.jspecify.annotations.Nullable;
 
 public class PlacedMedusa extends Entity implements IMedusa {
 
+    private static final EntityDataAccessor<Boolean> ACTIVE = SynchedEntityData.defineId(PlacedMedusa.class, EntityDataSerializers.BOOLEAN);
+
+    //these are not needed by client so they don't need be synched data.
+    private float time = 0.0f;
+    private float distance = 0f;
 
 
     public PlacedMedusa(EntityType<?> type, Level level) {
         super(type, level);
     }
 
-    public PlacedMedusa(Level level, Vec3 pos, boolean active){
+    public PlacedMedusa(Level level, Vec3 pos){
         super(ModEntities.PLACED_MEDUSA_ENTITY_TYPE, level);
         setPos(pos);
     }
@@ -60,26 +68,53 @@ public class PlacedMedusa extends Entity implements IMedusa {
         return true;
     }
 
+    public boolean isActive(){
+        return entityData.get(ACTIVE);
+    }
+
+    public void setActive(boolean active){
+        entityData.set(ACTIVE, active);
+    }
+
     //TODO: handle medusa data
 
     //stack is likely completely null always for all these methods
 
     @Override
     public void MedusaTick(@Nullable ItemStack stack, @Nullable Entity owner) {
+        if (level().isClientSide()){
+            return;
+        }
+        if (!isActive()){
+            return;
+        }
+        float delta = 1.0f / level().tickRateManager().tickrate();
+        time -= delta;
+
+        if (time <= 0){
+            SphereManager.createSphere(position(), distance, this, (ServerLevel) level());
+            setActive(false);
+        }
 
     }
 
-
+    @Override
+    public void tick() {
+        super.tick();
+        MedusaTick(null, this);
+    }
 
     @Override
     public void activate(@Nullable ItemStack stack, float t, float d, @Nullable Entity owner) {
-
+        time = t;
+        distance = d;
+        setActive(true);
     }
 
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder entityData) {
-
+        entityData.define(ACTIVE, false);
     }
 
     @Override
