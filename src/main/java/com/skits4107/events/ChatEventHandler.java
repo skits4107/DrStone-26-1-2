@@ -24,6 +24,7 @@ public class ChatEventHandler {
 
     public static void serverChatMessage(PlayerChatMessage message, ServerPlayer player, ChatType.Bound bound){
         String raw_text = message.decoratedContent().getString();
+        DrStone.LOGGER.info("chat raw: '{}'", raw_text);
         String[] params = raw_text.strip().split(" ");
 
         if (params.length != 4){
